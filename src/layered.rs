@@ -19,11 +19,14 @@ impl<I, O, E> Layered<I, O, E> where
     }
 
     pub async fn call(self, i: I) -> Result<O, E> {
-        self.middleware.call(i, self.next)
+        self.middleware.call(i, self.next).await
     }
 }
 
-impl<I, O, E> NextImpl<I, O, E> for Layered<I, O, E> {
+impl<I, O, E> NextImpl<I, O, E> for Layered<I, O, E> where
+    I: Send + Sync + 'static,
+    O: Send + Sync + 'static,
+    E: Send + Sync + 'static {
     fn call(self, i: I) -> BoxFuture<'static, Result<O, E>> {
         Box::pin(self.call(i))
     }

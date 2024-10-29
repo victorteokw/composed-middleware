@@ -9,19 +9,19 @@ use crate::next::{Next, NextImpl};
 
 #[tokio::main]
 async fn main() {
-    let middleware_outer = Middleware::<i32, i32, Infallible>::new(|req, next| async {
+    let middleware_outer = Middleware::<i32, i32, Infallible>::new(|req, next| async move {
         println!("outer in");
         let result = next.call(req).await?;
         println!("outer out");
         return Ok(result)
     });
-    let middleware_inner = Middleware::<i32, i32, Infallible>::new(|req, next| async {
+    let middleware_inner = Middleware::<i32, i32, Infallible>::new(|req, next| async move {
         println!("inner in");
         let result = next.call(req).await?;
         println!("inner out");
         return Ok(result)
     });
-    let service = Next::<i32, i32, Infallible>::new(|req| async {
+    let service = Next::<i32, i32, Infallible>::new(|req| async move {
         Ok(req + 5)
     });
     let layer = Layered::new(

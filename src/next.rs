@@ -31,7 +31,7 @@ where
     I: Send + Sync + 'static,
     O: Send + Sync + 'static,
     E: Send + Sync + 'static {
-    pub fn new<T>(n: T) -> Self where T: NextImpl<I, O, E> {
+    pub fn new<T>(n: T) -> Self where T: NextImpl<I, O, E> + 'static {
         Self {
             imp: Box::new(n)
         }

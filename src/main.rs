@@ -91,8 +91,8 @@ pub struct CallRef<I, O, E> where
     I: Send + Sync + 'static,
     O: Send + Sync + 'static,
     E: Send + Sync + 'static {
-    middleware_ref: * const Middleware<I, O, E>,
-    next_ref: * const Next<I, O, E>,
+    middleware_ref: &'static Middleware<I, O, E>,
+    next_ref: &'static Next<I, O, E>,
 }
 impl<I, O, E> CallRef<I, O, E> where
     I: Send + Sync + 'static,
@@ -100,17 +100,17 @@ impl<I, O, E> CallRef<I, O, E> where
     E: Send + Sync + 'static {
     pub fn new(middleware: &Middleware<I, O, E>, next: &Next<I, O, E>) -> Self {
         Self {
-            middleware_ref: middleware as *const Middleware<I, O, E>,
-            next_ref: next as *const Next<I, O, E>,
+            middleware_ref: unsafe { &*(middleware as *const Middleware<I, O, E>) },
+            next_ref: unsafe { &*(next as *const Next<I, O, E>) },
         }
     }
 
     pub fn middleware(&self) -> &'static Middleware<I, O, E> {
-        unsafe { &*self.middleware_ref }
+        self.middleware_ref
     }
 
     pub fn next(&self) -> &'static Next<I, O, E> {
-        unsafe { &*self.next_ref }
+        self.next_ref
     }
 }
 unsafe impl<I, O, E> Send for CallRef<I, O, E> where
@@ -130,7 +130,10 @@ pub struct LinkedMiddleware<I, O, E> where
     inner: Box<Middleware<I, O, E>>,
 }
 
-impl<I, O, E> LinkedMiddleware<I, O, E> where I: Send + Sync + 'static, O: Send + Sync + 'static, E: Send + Sync + 'static {
+impl<I, O, E> LinkedMiddleware<I, O, E> where
+    I: Send + Sync + 'static,
+    O: Send + Sync + 'static,
+    E: Send + Sync + 'static {
     pub fn new(outer: Middleware<I, O, E>, inner: Middleware<I, O, E>) -> Self {
         Self {
             outer: Box::new(outer),

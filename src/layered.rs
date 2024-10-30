@@ -3,31 +3,31 @@ use crate::middleware::Middleware;
 use crate::next::{Next, NextImpl};
 
 pub struct Layered<I, O, E> where
-    I: Send + Sync + 'static,
-    O: Send + Sync + 'static,
-    E: Send + Sync + 'static {
+    I: Send + Sync,
+    O: Send + Sync,
+    E: Send + Sync {
     middleware: Middleware<I, O, E>,
     next: Next<I, O, E>,
 }
 
 impl<I, O, E> Layered<I, O, E> where
-    I: Send + Sync + 'static,
-    O: Send + Sync + 'static,
-    E: Send + Sync + 'static {
+    I: Send + Sync,
+    O: Send + Sync,
+    E: Send + Sync {
     pub fn new(middleware: Middleware<I, O, E>, next: Next<I, O, E>) -> Self {
         Self { middleware, next }
     }
 
-    pub async fn call(self, i: I) -> Result<O, E> {
-        self.middleware.call(i, self.next).await
+    pub async fn call(&self, i: I) -> Result<O, E> {
+        self.middleware.call(i, &self.next).await
     }
 }
 
 impl<I, O, E> NextImpl<I, O, E> for Layered<I, O, E> where
-    I: Send + Sync + 'static,
-    O: Send + Sync + 'static,
-    E: Send + Sync + 'static {
-    fn call(self, i: I) -> BoxFuture<'static, Result<O, E>> {
+    I: Send + Sync,
+    O: Send + Sync,
+    E: Send + Sync {
+    fn call(&self, i: I) -> BoxFuture<'static, Result<O, E>> {
         Box::pin(self.call(i))
     }
 }

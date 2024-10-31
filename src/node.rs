@@ -50,3 +50,10 @@ impl Node {
         self.value = value;
     }
 }
+
+// main
+// let mut root = Box::new(Node::new(5));
+// root.add_child(Node::new(10));
+// root.add_child(Node::new(15));
+// let first = root.child(0);
+// println!("see first parent: {:?}", first.parent());

@@ -2,32 +2,32 @@ use futures_util::future::BoxFuture;
 use crate::middleware::Middleware;
 use crate::next::{Next, NextImpl};
 
-pub struct Layered<I, O, E> where
-    I: Send + Sync,
-    O: Send + Sync,
-    E: Send + Sync {
-    middleware: Middleware<I, O, E>,
-    next: Next<I, O, E>,
+pub struct Layered<'a, I, O, E> where
+    I: Send + Sync + 'a,
+    O: Send + Sync + 'a,
+    E: Send + Sync + 'a {
+    middleware: Middleware<'a, I, O, E>,
+    next: Next<'a, I, O, E>,
 }
 
-impl<I, O, E> Layered<I, O, E> where
-    I: Send + Sync,
-    O: Send + Sync,
-    E: Send + Sync {
-    pub fn new(middleware: Middleware<I, O, E>, next: Next<I, O, E>) -> Self {
+impl<'a, I, O, E> Layered<'a, I, O, E> where
+    I: Send + Sync + 'a,
+    O: Send + Sync + 'a,
+    E: Send + Sync + 'a {
+    pub fn new(middleware: Middleware<'a, I, O, E>, next: Next<'a, I, O, E>) -> Self {
         Self { middleware, next }
     }
 
-    pub async fn call(&self, i: I) -> Result<O, E> {
+    pub async fn call(&'a self, i: I) -> Result<O, E> {
         self.middleware.call(i, &self.next).await
     }
 }
 
-impl<I, O, E> NextImpl<I, O, E> for Layered<I, O, E> where
-    I: Send + Sync,
-    O: Send + Sync,
-    E: Send + Sync {
-    fn call(&self, i: I) -> BoxFuture<'static, Result<O, E>> {
+impl<'a, I, O, E> NextImpl<'a, I, O, E> for Layered<'a, I, O, E> where
+    I: Send + Sync + 'a,
+    O: Send + Sync + 'a,
+    E: Send + Sync + 'a {
+    fn call(&'a self, i: I) -> BoxFuture<'a, Result<O, E>> {
         Box::pin(self.call(i))
     }
 }
